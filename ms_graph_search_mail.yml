@@ -1,0 +1,50 @@
+---
+- name: MS Graph Search Mail
+  hosts: localhost
+  gather_facts: false
+  tasks:
+  
+    - name: Generate Date Generator
+      set_fact:
+        date_generator: "date -d \"{{ days_ago_target }} day ago\" +%Y-%m-%dT%H:%M:%SZ"
+  
+    - name: Generate date
+      set_fact:
+        fecha_offset: "{{ lookup('pipe',date_generator) }}"
+        
+    - name: Generate date filter from offset
+      set_fact:
+        filtro_offset: "receivedDateTime gt {{ fecha_offset }}"
+     
+    - name: Generate from filter
+      set_fact:
+        filtro_from: "(from/emailAddress/address) eq '{{ from_target }}'"
+        
+    - name: Generate subject filter
+      set_fact:
+        filtro_subject: "subject eq '{{ subject_target }}'"
+    
+    # El filtro debe quedar segun esta docu: https://learn.microsoft.com/en-us/graph/filter-query-parameter
+    - name: Join filter
+      set_fact:
+        filtro: "{{ filtro_from }} and {{ filtro_offset }} and {{ filtro_subject }}"
+    
+    - name: Check email
+      uri:
+        url: "https://graph.microsoft.com/v1.0/me/messages?$filter={{ filtro | urlencode }}"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ token }}"
+        return_content: yes
+        status_code: 200
+        body_format: json
+      register: output
+      
+    - name: print content
+      debug:
+        msg: "{{ output.content }}"
+
+    - name: Check Number of mails
+      ansible.builtin.fail:
+        msg: "No mails found with the targeted queries"
+      when: ((output.content | from_json).value | length ) == 0

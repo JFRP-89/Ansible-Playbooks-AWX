@@ -1,0 +1,20 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:     
+    - name: Documenta incidencia
+      servicenow.itsm.incident:
+        instance:
+          host: https://indrademo02.service-now.com
+          username: "{{ sn_username }}"
+          password: "{{ sn_password }}"
+        state: on_hold
+        hold_reason: awaiting_problem
+#        number: "{{ request.json.description }}"
+        number: "{{ codigo_inc_4 }}"
+        urgency: high
+        other:
+          work_notes: "Remediación automática 4 no ha solucionado el problema. Se recomienda revisar el problema manualmente"
+        
+    - debug:
+        msg: "Incidencia {{ codigo_inc_4 }} documentado"

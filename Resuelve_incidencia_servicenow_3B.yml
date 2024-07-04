@@ -1,0 +1,56 @@
+---
+- hosts: localhost
+  gather_facts: false
+  vars: 
+    inventory_name: Codigo_Inc_3B
+  tasks:  
+    - name: Recupera INC en temporal inventory on AWX API
+      uri:
+        url: http://10.87.28.10:30665/api/v2/inventories/{{ inventory_name }}++Default/
+        validate_certs: no
+        method: GET
+        user: "{{ awx_username }}"
+        password: "{{ awx_password }}"
+        status_code: 200
+        body: 
+          {
+            "name": "{{ inventory_name }}"
+          }
+        body_format: json
+        follow_redirects: "all"
+        force_basic_auth: true
+      register: request
+      
+    - debug: msg="{{ request.json.description }}"
+    
+    
+    - name: Resuelve incidencia
+      servicenow.itsm.incident:
+        instance:
+          host: https://indrademo02.service-now.com
+          username: "{{ sn_username }}"
+          password: "{{ sn_password }}"
+        state: resolved
+        close_code: Solved (Permanently)
+        close_notes: resuelto por Automatización
+#        sys_id: 
+        number: "{{ request.json.description }}"
+        
+    - debug:
+        msg: "Incidencia {{ request.json.description }} resuelta"
+        
+    - name: Borrar temporal inventory from AWX API
+      uri:
+        url: http://10.87.28.10:30665/api/v2/inventories/{{ inventory_name }}++Default/
+        validate_certs: no
+        method: DELETE
+        user: "{{ awx_username }}"
+        password: "{{ awx_password }}"
+        status_code: 202
+        body: 
+          { 
+            "name": "{{ inventory_name }}"
+          }
+        body_format: json
+        follow_redirects: "all"
+        force_basic_auth: true

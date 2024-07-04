@@ -1,0 +1,10 @@
+---
+- name: Instalar aplicacion X
+  hosts: all
+  become: yes
+  tasks:
+    - name: Instala una lista de paquetes
+      ansible.builtin.apt:
+        pkg:
+        - foo
+        - foo-tools

@@ -1,0 +1,9 @@
+---
+- name: Elimina fichero o directorio win
+  hosts: all
+  tasks:
+    - name: Remove a file
+      ansible.windows.win_file:
+        path: "{{ file_target }}"
+        state: absent
+        

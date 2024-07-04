@@ -1,0 +1,22 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:  
+    - name: Activa planificacion
+      uri:
+        url: http://10.87.28.10:30665/api/v2/schedules/7/      
+        validate_certs: no
+        method: PATCH
+        user: "{{ awx_username }}"
+        password: "{{ awx_password }}"
+        status_code: 200
+        body: 
+          {
+            "enabled": true
+          }
+        body_format: json
+        follow_redirects: "all"
+        force_basic_auth: true
+      register: request
+      
+    - debug: msg="{{ request.json.enabled }}"

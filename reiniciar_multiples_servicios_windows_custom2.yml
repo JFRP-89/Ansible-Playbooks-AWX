@@ -1,0 +1,10 @@
+---
+- name: Reinicio de servicios X
+  hosts: all
+  tasks:
+    - name: Reiniciando servicios
+      win_service:
+        name: "{{ item }}"
+        state: restarted
+      with_items:
+      - "{{ toma_servicios }}"

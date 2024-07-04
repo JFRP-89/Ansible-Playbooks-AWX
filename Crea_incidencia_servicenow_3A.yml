@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:  
+    - name: Creando incidencia en service-now
+      servicenow.itsm.incident:
+        instance:
+          host: https://indrademo02.service-now.com
+          username: "{{ sn_username }}"
+          password: "{{ sn_password }}" 
+        state: in_progress
+        #caller: Hernan.Pareja
+        short_description: Se ha detectado el servicio "{{ one_service }}" parado. Incidencia generada por Automatismo 3A.
+        description: Test - servicio "{{ one_service }}" parado
+        impact: low
+        urgency: low
+#        correlation_id: "reiniciar_servicios"
+      register: result
+     
+    - debug:
+        msg: "Incidencia {{ result.record.number }} creada correctamente"
+
+    - name: "Creacion de variable para exportar"
+      set_stats:
+        data:
+          codigo_inc_3A:  "{{ result.record.number }}"

@@ -1,0 +1,20 @@
+---
+- name: Reiniciar multiples servicios Linux desde un fichero en repo
+  hosts: all
+  become: yes
+  vars: 
+    contents: "{{ lookup('file', './roles/win_pilot/files/lservices.txt').splitlines() }}"
+  tasks:
+    - name: Muestra contenido
+      debug:  
+        msg: "{{ contents }}"
+        
+    - name: Reiniciar servicios Linux
+      ansible.builtin.systemd:
+        state: restarted
+        name: "{{ item }}"
+      with_items:
+      - "{{ contents }}"
+        
+#        state: stopped
+#        state: started

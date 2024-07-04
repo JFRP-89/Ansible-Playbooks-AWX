@@ -1,0 +1,11 @@
+---
+- name: revisar estado de servicio
+  hosts: all
+  tasks:
+    - name: Recolecta información de un servicio
+      ansible.windows.win_service_info:
+        name: "{{ one_service }}"
+      register: service_info
+    - debug: msg="El servicio {{ one_service }} existe --> {{ service_info.exists | bool }}"
+    - debug: msg={{ service_info.services }}.state
+#      when: service_info.services.state == 'stopped'

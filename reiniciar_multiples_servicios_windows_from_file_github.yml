@@ -1,0 +1,24 @@
+---
+- name: Reinicio de servicios windows desde un fichero en repo git
+  hosts: all
+  vars:
+#    contents: "{{ lookup('file','./roles/win_pilot/files/services.txt') }}"
+    contents: "{{ lookup('file', './roles/win_pilot/files/services.txt').splitlines() }}"
+  tasks:
+    - name: Muestra contenido
+      debug:  
+        msg: "{{ contents }}"
+        
+    - name: Parar servicios X
+      win_service:
+        name: "{{ item }}"
+        state: stopped
+      with_items:
+      - "{{ contents }}"
+      
+    - name: Iniciar servicios X
+      win_service:
+        name: "{{ item }}"
+        state: started
+      with_items:
+      - "{{ contents }}"

@@ -1,0 +1,44 @@
+---
+- name: Google API delete drive file
+  hosts: localhost
+
+  tasks:
+
+    - name: Generate name filter by name_target
+      set_fact:
+        filter_name: "name = '{{ name_target }}'"
+        
+    - name: Generate file mimetype filter (hardcoded)
+      set_fact:
+        filter_mimetype: "mimeType = 'application/vnd.google-apps.document'"
+    
+    # El filtro debe quedar segun este link: https://developers.google.com/drive/api/guides/search-files
+    - name: Join filters
+      set_fact:
+        filtro: "{{ filter_name }} and {{ filter_mimetype }}"
+    
+    - name: Check email
+      uri:
+        url: "https://www.googleapis.com/drive/v3/files?q={{ filtro | urlencode }}"
+        method: DELETE
+        headers:
+          Authorization: "Bearer {{ token }}"
+        return_content: yes
+        status_code: 204
+      register: output
+      
+    - name: print content
+      debug:
+        msg: "{{ output.content }}"
+    
+    - name: Delete files
+      uri:
+        url: "https://www.googleapis.com/drive/v3/files/{{ item.id }}"
+        method: DELETE
+        headers:
+          Authorization: "Bearer {{ token }}"
+        return_content: yes
+        status_code: 200
+        body_format: json
+      with_items: "{{ item.files }}"
+       

@@ -1,0 +1,8 @@
+---
+- name: Obtiene informacion del archivo
+  hosts: all
+  tasks:
+    - name: Obtain information about a file
+      ansible.windows.win_stat:
+        path: "{{ file_target }}"
+      register: file_info

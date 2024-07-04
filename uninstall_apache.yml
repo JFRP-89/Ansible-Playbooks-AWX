@@ -1,0 +1,8 @@
+---
+- name: Uninstall Apache
+  hosts: all
+  tasks:
+    - name: Desinstala MSI
+      win_package:
+        path: C:\Users\hapareja\Desktop\mis_temporales\httpd-2.2.25-win32-x86-no_ssl.msi
+        state: absent

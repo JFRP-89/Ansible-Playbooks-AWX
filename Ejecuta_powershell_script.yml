@@ -1,0 +1,7 @@
+---
+- name: Ejecuta script de powershell
+  hosts: all
+  gather_facts: false
+  tasks:
+   - name: Ejecuta script de powershell
+     script: c:\test\holamundo.ps1

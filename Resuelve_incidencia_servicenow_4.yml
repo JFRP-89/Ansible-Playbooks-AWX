@@ -1,0 +1,18 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:  
+    - name: Resuelve incidencia
+      servicenow.itsm.incident:
+        instance:
+          host: https://indrademo02.service-now.com
+          username: "{{ sn_username }}"
+          password: "{{ sn_password }}"
+        state: resolved
+        close_code: Solved (Permanently)
+        close_notes: resuelto por Automatización 4
+#        sys_id: 
+        number: "{{ codigo_inc_4 }}"
+        
+    - debug:
+        msg: "Incidencia {{ codigo_inc_4 }} resuelta"

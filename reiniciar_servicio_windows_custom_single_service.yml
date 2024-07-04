@@ -1,0 +1,13 @@
+---
+- name: Reinicio de servicio X
+  hosts: all
+  tasks:
+    - name: Parar servicio X
+      win_service:
+        name: "{{ one_service }}"
+        state: stopped
+
+    - name: Iniciar servicio X
+      win_service:
+        name: "{{ one_service }}"
+        state: started

@@ -1,0 +1,9 @@
+---
+- name: Reiniciar servicio X
+  hosts: all
+  become: yes
+  tasks:
+    - name: Restart service chrony on ubuntu
+      ansible.builtin.systemd:
+        state: restarted
+        name: chrony

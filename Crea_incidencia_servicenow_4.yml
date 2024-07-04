@@ -1,0 +1,42 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:     
+    - name: Creando incidencia en service-now
+      servicenow.itsm.incident:
+        instance:
+          host: https://indrademo02.service-now.com
+          username: "{{ sn_username }}"
+          password: "{{ sn_password }}"
+        state: in_progress
+        #caller: Hernan.Pareja
+        short_description: "Se ha detectado errores en 3 archivos .log. y Eventlog muestra errores.Incidencia generada por Automatismo 4"
+        #description: "Errores en 3 archivos .log y en los siguientes EventLogs: {{ lista_errores | join(' , ') }}"
+        description: "Errores en 3 archivos .log y en los siguientes EventLogs de los comentarios "
+        impact: low
+        urgency: low
+#        correlation_id: "reiniciar_servicios"
+      register: result
+     
+    - debug:
+        msg: "Incidencia {{ result.record.number }} creada correctamente"
+
+    - name: "Creacion de variable para exportar"
+      set_stats:
+        data:
+          codigo_inc_4:  "{{ result.record.number }}"
+          
+    - name: Documenta incidencia
+      servicenow.itsm.incident:
+        instance:
+          host: https://indrademo02.service-now.com
+          username: "{{ sn_username }}"
+          password: "{{ sn_password }}"
+        state: in_progress
+        number: "{{ result.record.number }}"
+        urgency: high
+        other:
+          work_notes: "Errores en 3 archivos .log y en los siguientes EventLogs: {{ lista_errores }}"
+        
+    - debug:
+        msg: "Incidencia {{ result.record.number }} documentado"

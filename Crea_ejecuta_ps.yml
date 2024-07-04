@@ -1,0 +1,23 @@
+---
+- name: Parar servicios con Powershell sin despliegue de archivo.ps1
+  hosts: all
+  gather_facts: false
+  tasks:
+   - name: Creando carpeta temporal
+     win_file:
+       path: C:\test
+       state: directory
+       
+   - name: creando un archivo con touch
+     win_file:
+       path: C:\test\restart_services.ps1
+       state: touch
+       
+   - name: Poner contenido al archivo PS
+     win_copy:
+       content: {{ [System.Windows.Forms.MessageBox]::Show("Script Ejecutado¡","Advertencia") }}
+       dest: C:\test\restart_services.ps1
+
+   - name: Ejecuta script de powershell
+     ansible.windows.win_powershell:
+       script: C:\test\restart_services.ps1

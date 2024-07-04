@@ -1,0 +1,41 @@
+---
+- name: Test Google API
+  hosts: localhost
+
+  tasks:
+  
+    - name: Generate date filter by date_offset_target
+      set_fact:
+        filtro_offset: "newer_than:{{ date_offset_target }}"
+
+    - name: Generate from filter by from_target
+      set_fact:
+        filtro_from: "from:{{ from_target }}"
+        
+    - name: Generate subject filter by subject_target
+      set_fact:
+        filtro_subject: "subject:{{ subject_target }}"
+    
+    # El filtro debe quedar segun este link: https://support.google.com/mail/answer/7190
+    - name: Join filters
+      set_fact:
+        filtro: "{{ filtro_offset }} and {{ filtro_from }} and {{ filtro_subject }}"
+    
+    - name: Check email
+      uri:
+        url: "https://gmail.googleapis.com/gmail/v1/users/me/messages"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ token }}"
+        return_content: yes
+        status_code: 200
+      register: output
+      
+    - name: print content
+      debug:
+        msg: "{{ output.content }}"
+
+    - name: Check Number of mails
+      ansible.builtin.fail:
+        msg: "No mails found with the targeted queries"
+      when: output.content.resultSizeEstimate == 0

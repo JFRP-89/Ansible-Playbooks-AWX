@@ -1,0 +1,65 @@
+---
+- name: Pruebas EventLog
+  hosts: all
+  vars:
+    error_1m: "0"
+#    instances_id: ""
+  tasks:
+    - name: Dame datos del ultimo error de Aplicación en EventLog
+      ansible.windows.win_powershell:
+        script: |
+          param (
+            [String]
+            $log_name,
+            [int]
+            $minutos,
+            [String]
+            $message,
+            [String]
+            $mtype
+          )
+          $end = Get-Date
+          $1min = New-TimeSpan -Minutes $minutos
+          $begin = (Get-Date) - $1min
+          Get-EventLog -LogName $log_name -EntryType $mtype -After $begin -Before $end | where-Object {$_.Message -match $message}
+        parameters:
+          log_name: "{{ logName_valor }}"
+          minutos: "{{ minutos }}"
+          message: "{{ mensaje }}"
+          mtype: "{{ Entry_Type }}"
+      register: salida    
+     
+    - debug: msg="{{ salida.output | length }}"     
+
+    - name: recuperar salidas
+      ansible.builtin.set_fact:
+        instances_id: "{{ instances_id | default([]) + [item.Source]  }}"
+      with_items: "{{ salida.output }}"
+  
+#    - name: imprime Instancias
+#      debug:
+#        msg: "{{ instances_id }}"
+
+    - name: "Creacion de variable para exportar"
+      set_stats:
+        data:
+          lista_errores: "{{ instances_id }}"
+      when: (salida.output | length) > 0
+        
+    - name: Retorna Failed si hay EventLog tipo info-warning en el ultimo minuto
+      ansible.windows.win_powershell:
+        script: |
+          param (
+            [String]
+            $error_1m
+          )
+          if ($Error_1m -eq "0"){
+            $Ansible.Failed = $false
+          }
+          Else{
+            $Ansible.Failed = $true
+          }
+        parameters:
+          error_1m: "{{ salida.output | length }}"
+          
+#          Get-EventLog -LogName $log_name -EntryType Information -After $begin -Before $end

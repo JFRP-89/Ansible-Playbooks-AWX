@@ -1,0 +1,8 @@
+---
+- name: Crea un fichero o directorio Windows
+  hosts: all
+  tasks:
+    - name: Touch a file (creates if not present, updates modification time if present)
+      ansible.windows.win_file:
+        path: "{{ file_target }}"
+        state: touch

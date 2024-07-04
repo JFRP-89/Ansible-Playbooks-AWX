@@ -1,0 +1,18 @@
+---
+- name: conectando con windows server 2019
+  hosts: all
+  tasks:
+   - name: creando un archivo con touch
+     win_file:
+       path: C:\Users\hapareja\Desktop\test.txt
+       state: touch
+
+   - name: Creando carpeta
+     win_file:
+       path: C:\Users\hapareja\Desktop\carpeta_test
+       state: directory
+
+   - name: Poner contenido a un archivo
+     win_copy:
+       content: copiando contenido desde Ansible-Ubuntu a este archivo
+       dest: C:\Users\hapareja\Desktop\test.txt

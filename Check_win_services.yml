@@ -1,0 +1,35 @@
+---
+- name: revisar estado de servicios
+  hosts: all
+  tasks:
+    - name: Recolecta información de un servicio
+      ansible.windows.win_service_info:
+        name: "{{ one_service }}"
+      register: service_info
+    - debug: msg="El servicio {{ one_service }} existe --> {{ service_info.exists | bool }}"
+##    - debug: msg={{ service_info.services.state }}
+#      when: service_info.services.state == 'stopped'
+    
+    - name: Retorna Failed si servicio está parado
+      ansible.windows.win_powershell:
+        script: |
+          param (
+          [String]
+          $Servicio
+          )
+          $Ansible.Failed = $false
+          if ((Get-Service -Name $Servicio).Status -eq "stopped") {
+            $Ansible.Failed = $true
+          }
+        parameters:
+          Servicio: "{{ one_service }}"
+#         Ansible.changed: no
+#         Ansible.result: ""
+         
+#    - debug: msg="{{ Ansible.changed }}" 
+    
+#    - name: Iniciar servicios X si está parado
+#      win_service:
+#        name: "{{ one_service }}"
+#        state: started
+#      when: not (service_info.exists | bool)

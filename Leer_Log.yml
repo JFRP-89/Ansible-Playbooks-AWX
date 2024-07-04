@@ -1,0 +1,82 @@
+---
+- name: Lectura de log
+  hosts: all
+  vars:
+    regex_time: '\d{4}(-\d{2}){2}(T)(\d{2}:){1}\d{2}:\d{2}'
+    #regex_error: '.*Error.*'
+    standard_format_time: '%Y-%m-%dT%H:%M:%S'
+    hay_error_1h: false
+
+  tasks:
+    - name: Obtener contenido del fichero
+      #win_shell: 'type C:\test\fichero1.log'
+      win_shell: 'type {{ path_log }}'
+      register: file_contents
+      
+    - name: Muestra errores
+      ansible.builtin.set_fact:
+        lista_errores: "{{ file_contents.stdout_lines | select('match', regex_error) | list }}"
+    - debug: 
+        msg: "{{ lista_errores }}"
+    
+    - name: Muestra regex time match
+      ansible.builtin.set_fact:
+        lista_regex_time: "{{ lista_errores | select('match', regex_time) | list }}"
+    - debug:  
+        msg: "{{ lista_regex_time }}"
+      
+      
+    - name: Muestra solo la hora
+      ansible.builtin.set_fact:
+        lista_time: "{{ lista_regex_time | map('regex_search',regex_time) | select('string') | list }}"
+    - debug:  
+        msg: "{{ lista_time }}"
+        
+#    - name: casteo de fechas
+#      ansible.builtin.set_fact:
+#        lista_datetime: "{{ lista_time | map('to_datetime', standard_format_time) | list }}"
+#    - debug:
+#        msg: "{{ lista_datetime }}"
+
+    - name: obtener fecha actual
+      ansible.windows.win_powershell:
+        script: |
+          $Ansible.result = Get-Date -Format "yyyy-MM-ddTHH:mm:ss"
+      register: fecha_actual
+    - debug: msg="{{ fecha_actual.result }}"
+    
+
+    - name: Filtrado de lineas correctas por fecha
+      debug:
+        msg: "{{ lista_errores | select('match', '.*'+item+'.*') }}"
+      when: ( (((fecha_actual.result | to_datetime(standard_format_time)) - (item | to_datetime(standard_format_time))).total_seconds() / 3600) | int ) < 1
+      loop: "{{ lista_time }}"
+      
+    - name: busca que haya al menos un error en la ultima hora
+      ansible.builtin.set_fact:
+        hay_error_1h: true
+      when: ( (((fecha_actual.result | to_datetime(standard_format_time)) - (item | to_datetime(standard_format_time))).total_seconds() / 3600) | int ) < 1
+      loop: "{{ lista_time }}"
+      
+      
+ 
+    - debug:
+        msg: "{{ ( (((fecha_actual.result | to_datetime(standard_format_time)) - (item | to_datetime(standard_format_time))).total_seconds() / 3600) | int )}}"
+      loop: "{{ lista_time }}"
+      
+      
+    - name: Retorna Failed si hay error en la ultima hora
+      ansible.windows.win_powershell:
+        script: |
+          param (
+            [String]
+            $Error_1h
+          )
+          if ($Error_1h -eq $false){
+            $Ansible.Failed = $false
+          }
+          Else{
+            $Ansible.Failed = $true
+          }
+        parameters:
+          Error_1h: "{{ hay_error_1h }}"

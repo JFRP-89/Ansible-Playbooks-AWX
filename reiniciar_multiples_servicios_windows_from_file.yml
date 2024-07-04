@@ -1,0 +1,25 @@
+---
+- name: Reinicio de servicios windows desde un fichero externo
+  hosts: all
+  tasks:
+    - name: Obtener contenido del fichero
+      win_shell: 'type C:\test\servicios.txt'
+      register: file_contents
+
+#    - name: Muestra contenido
+#      debug:  
+#        msg: "{{ file_contents.stdout_lines }} "
+      
+    - name: Parar servicios X
+      win_service:
+        name: "{{ item }}"
+        state: stopped
+      with_items:
+      - "{{ file_contents.stdout_lines }}"
+      
+    - name: Iniciar servicios X
+      win_service:
+        name: "{{ item }}"
+        state: started
+      with_items:
+      - "{{ file_contents.stdout_lines }}"

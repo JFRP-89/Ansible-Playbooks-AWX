@@ -1,0 +1,14 @@
+---
+- name: Reiniciar servicios Linux
+  hosts: all
+  become: yes
+  tasks:
+    - name: Reiniciar servicios
+      ansible.builtin.systemd:
+        state: restarted
+        name: "{{ item }}"
+      with_items:
+      - "{{ toma_servicios }}"
+        
+#        state: stopped
+#        state: started

@@ -1,0 +1,43 @@
+---
+- hosts: localhost
+  gather_facts: false
+  vars:
+    inventory_name: Codigo_Inc_3B
+  tasks:  
+    - name: Creando incidencia en service-now
+      servicenow.itsm.incident:
+        instance:
+          host: https://indrademo02.service-now.com
+          username: "{{ sn_username }}"
+          password: "{{ sn_password }}"
+        state: in_progress
+        #caller: Hernan.Pareja
+        short_description: Se ha detectado el servicio "{{ one_service }}" parado. Incidencia generada por Automatismo 3b.
+        description: Test - servicio "{{ one_service }}" parado
+        impact: low
+        urgency: low
+#        correlation_id: "reiniciar_servicios"
+      register: result
+     
+    - debug:
+        msg: "Incidencia {{ result.record.number }} creada correctamente"
+########################################################################################### 
+   
+    - name: Post temporal inventory with INC in Description to AWX API
+      uri:
+        url: http://10.87.28.10:30665/api/v2/inventories/
+        validate_certs: no
+        method: POST
+        user: "{{ awx_username }}"
+        password: "{{ awx_password }}"
+        status_code: 201
+        body: 
+          { 
+            "name": "{{ inventory_name }}",
+            "description": "{{ result.record.number }}", 
+            "organization": 1
+          } 
+        body_format: json 
+        follow_redirects: "all" 
+        force_basic_auth: true
+        

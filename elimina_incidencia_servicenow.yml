@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:  
+    - name: Eliminar incidencia
+      servicenow.itsm.incident:
+        instance:
+          host: https://indrademo02.service-now.com
+          username: "{{ sn_username }}"
+          password: "{{ sn_password }}"
+        state: absent
+        number: "{{ inc_var }}"
+        
+    - debug:
+        msg: "Incidencia {{ inc_var }} eliminada"
