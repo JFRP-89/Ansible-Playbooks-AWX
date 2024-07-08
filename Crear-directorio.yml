@@ -1,0 +1,4 @@
+- name: Creates directory
+  ansible.builtin.file:
+    path: /home/vagrant/tololo
+    state: directory
