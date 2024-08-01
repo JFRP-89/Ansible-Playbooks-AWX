@@ -3,7 +3,7 @@
   hosts: all
   tasks:
     - name: Obtener contenido del fichero
-      win_shell: 'type C:\test\servicios.txt'
+      win_shell: 'type C:\Users\Administrator\Desktop\reset_test.txt'
       register: file_contents
 
 #    - name: Muestra contenido
