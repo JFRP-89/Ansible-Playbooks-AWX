@@ -5,7 +5,7 @@
     - name: Creando incidencia en service-now
       servicenow.itsm.incident:
         instance:
-          host: https://indrademo02.service-now.com
+          host: https://dev224084.service-now.com/
           username: "{{ sn_username }}"
           password: "{{ sn_password }}" 
         state: in_progress
